@@ -1,0 +1,551 @@
+/* ==========================================================
+   VARIABLES DE COLOR (tema claro por defecto)
+   ========================================================== */
+:root {
+	--bg: #eaf1fd;      /* fondo de la página */
+	--card: #f5f8ff;    /* fondo de tarjetas / tabla */
+	--ink: #0d1b3d;     /* color del texto principal */
+	--mute: #5d6f93;    /* texto secundario */
+	--acc: #1c5bd8;     /* color de acento (azul) */
+	--line: #c9d9f2;    /* color de las líneas */
+	--rec: #e3edfc;     /* fondo de la fila del recreo */
+	--day: #e9f0fc;     /* resalte de la columna del día actual */
+
+	/* Parámetros HSL usados para colorear cada materia */
+	--sat: 70%;         /* saturación */
+	--l: 93%;           /* luminosidad del fondo */
+	--bl: 82%;          /* luminosidad del borde */
+	--tl: 25%;          /* luminosidad del texto principal */
+	--tm: 50%;          /* luminosidad del texto secundario */
+
+	box-sizing: border-box;
+	/* Evita que el contenido quede bajo las barras del sistema en móviles */
+	padding-top: env(safe-area-inset-top, 0px);
+	padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+:root:not([data-theme="light"]) {}
+
+/* Tema oscuro automático (según el sistema), salvo que se fuerce el claro */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--bg: #0e1526;
+		--card: #131c33;
+		--ink: #e8eefc;
+		--mute: #8fa3cc;
+		--acc: #4b86f0;
+		--line: #26365c;
+		--rec: #18233f;
+		--day: #162040;
+		--sat: 35%;
+		--l: 22%;
+		--bl: 32%;
+		--tl: 88%;
+		--tm: 68%;
+	}
+}
+
+/* Tema oscuro forzado manualmente con el botón */
+:root[data-theme="dark"] {
+	--bg: #0e1526;
+	--card: #131c33;
+	--ink: #e8eefc;
+	--mute: #8fa3cc;
+	--acc: #4b86f0;
+	--line: #26365c;
+	--rec: #18233f;
+	--day: #162040;
+	--sat: 35%;
+	--l: 22%;
+	--bl: 32%;
+	--tl: 88%;
+	--tm: 68%;
+}
+
+/* ==========================================================
+   ESTILOS GENERALES
+   ========================================================== */
+* {
+	box-sizing: border-box;
+}
+
+html {
+	scroll-padding-top: env(safe-area-inset-top, 0px);
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--ink);
+	font-family: Inter, system-ui, sans-serif;
+	padding: 28px 16px;
+}
+
+/* Contenedor central con ancho máximo */
+.wrap {
+	max-width: 1500px;
+	margin: 0 auto;
+}
+
+/* ==========================================================
+   CABECERA (título + botones)
+   ========================================================== */
+header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+/* Texto pequeño superior (nombre del centro) */
+.eyebrow {
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: .14em;
+	color: var(--mute);
+	text-transform: uppercase;
+}
+
+h1 {
+	font-size: clamp(34px, 5vw, 50px); /* tamaño adaptable a la pantalla */
+	margin: 8px 0 14px;
+	font-weight: 800;
+	letter-spacing: -.02em;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+/* Etiqueta redondeada "2DAM" */
+.badge {
+	font-size: 16px;
+	font-weight: 700;
+	background: var(--acc);
+	color: #fff;
+	border-radius: 999px;
+	padding: 6px 16px;
+	letter-spacing: 0;
+}
+
+/* Subtítulo con el resumen (periodos y materias) */
+.sub {
+	color: var(--mute);
+	font-size: 18px;
+	margin: 0 0 28px;
+}
+
+/* Grupo de botones de la cabecera */
+.btns {
+	display: flex;
+	gap: 12px;
+}
+
+button {
+	font: inherit;
+	font-size: 16px;
+	font-weight: 500;
+	color: var(--acc);
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: 12px;
+	padding: 10px 18px;
+	cursor: pointer;
+}
+
+button:focus-visible {
+	outline: 2px solid var(--acc);
+	outline-offset: 2px;
+}
+
+/* Botón activado (por ejemplo, "Terminar edición") */
+button.on {
+	background: var(--acc);
+	color: #fff;
+}
+
+/* ==========================================================
+   TABLA DEL HORARIO (usa CSS Grid)
+   ========================================================== */
+
+/* Permite scroll horizontal en pantallas pequeñas */
+.scroll {
+	overflow-x: auto;
+	max-width: 100%;
+}
+
+/* Rejilla: 1 columna de horas + 5 días.
+   Filas: cabecera, 3 horas, recreo, 3 horas */
+.grid {
+	display: grid;
+	grid-template-columns: 110px repeat(5, minmax(0, 1fr));
+	grid-template-rows: auto repeat(3, minmax(170px, auto)) 52px repeat(3, minmax(170px, auto));
+	min-width: 900px;
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-top: 3px solid var(--acc);
+	border-radius: 22px;
+	overflow: hidden;
+}
+
+/* Cabecera de cada día (Lunes, Martes...) */
+.dh {
+	padding: 20px 8px;
+	text-align: center;
+	font-weight: 700;
+	font-size: 15px;
+	letter-spacing: .14em;
+	color: var(--acc);
+	text-transform: uppercase;
+	border-bottom: 2px solid var(--line);
+}
+
+/* Cabecera del día actual, resaltada */
+.dh.today {
+	background: var(--acc);
+	color: #fff;
+}
+
+/* Fondo suave para las celdas del día actual */
+.col-today {
+	background: var(--day);
+}
+
+/* Columna izquierda con las horas */
+.time {
+	padding: 12px 10px 0 0;
+	text-align: right;
+	color: var(--mute);
+	font-size: 16px;
+	border-right: 2px solid var(--line);
+	border-bottom: 1px solid var(--line);
+}
+
+/* Hora de inicio en negrita */
+.time b {
+	display: block;
+	color: var(--acc);
+	font-size: 21px;
+	font-weight: 700;
+}
+
+/* Cada celda de la tabla (contiene una clase o el botón "añadir") */
+.cell {
+	padding: 7px 5px;
+	border-bottom: 1px solid var(--line);
+	min-width: 0;
+	display: flex;
+}
+
+/* Tarjeta de una materia; el color sale de la variable --h (tono) */
+.cls {
+	flex: 1;
+	border-radius: 14px;
+	padding: 16px 15px;
+	background: hsl(var(--h) var(--sat) var(--l));
+	border: 1px solid hsl(var(--h) var(--sat) var(--bl));
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 5px;
+	color: hsl(var(--h) 45% var(--tl));
+	min-width: 0;
+	overflow-wrap: anywhere;
+	hyphens: auto;
+}
+
+/* Código de la materia */
+.cls .c {
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: .1em;
+	opacity: .8;
+}
+
+/* Nombre de la materia */
+.cls .n {
+	font-size: 19px;
+	font-weight: 700;
+	line-height: 1.25;
+}
+
+/* Nombre del profesor */
+.cls .t {
+	font-size: 15px;
+	color: hsl(var(--h) 20% var(--tm));
+}
+
+/* ==========================================================
+   FILA DEL RECREO (ocupa todo el ancho)
+   ========================================================== */
+.rec {
+	grid-column: 1 / -1;
+	display: grid;
+	grid-template-columns: 110px 1fr;
+	background: var(--rec);
+	border-bottom: 1px solid var(--line);
+}
+
+.rec .time {
+	border: 0;
+	padding: 10px 10px 8px 0;
+}
+
+.rec .time b {
+	font-size: 19px;
+}
+
+.rec span {
+	align-self: center;
+	text-align: center;
+	color: #5b8bd6;
+	letter-spacing: .2em;
+	font-weight: 600;
+	font-size: 15px;
+}
+
+/* ==========================================================
+   MODO EDICIÓN
+   ========================================================== */
+
+/* En modo edición las celdas son clicables */
+.edit .cell {
+	cursor: pointer;
+}
+
+/* Borde discontinuo al pasar el ratón por encima */
+.edit .cell:hover .cls,
+.edit .cell:hover .add {
+	outline: 2px dashed var(--acc);
+	outline-offset: -2px;
+}
+
+/* Casilla vacía "+ Añadir materia" (oculta salvo en modo edición) */
+.add {
+	flex: 1;
+	border-radius: 14px;
+	border: 2px dashed var(--line);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	color: var(--mute);
+	font-size: 15px;
+}
+
+.edit .add {
+	display: flex;
+}
+
+/* ==========================================================
+   VENTANA EMERGENTE (diálogo de edición)
+   ========================================================== */
+dialog {
+	border: 1px solid var(--line);
+	border-radius: 18px;
+	background: var(--card);
+	color: var(--ink);
+	padding: 24px;
+	width: min(420px, 92vw);
+	font-family: inherit;
+}
+
+/* Fondo oscurecido detrás del diálogo */
+dialog::backdrop {
+	background: rgba(5, 10, 25, .5);
+}
+
+dialog h2 {
+	margin: 0 0 4px;
+	font-size: 20px;
+}
+
+dialog p {
+	margin: 0 0 16px;
+	color: var(--mute);
+	font-size: 14px;
+}
+
+label {
+	display: block;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--mute);
+	margin: 12px 0 4px;
+}
+
+input,
+select {
+	width: 100%;
+	font: inherit;
+	font-size: 16px;
+	padding: 9px 12px;
+	border-radius: 10px;
+	border: 1px solid var(--line);
+	background: var(--bg);
+	color: var(--ink);
+}
+
+/* Deslizador de color */
+input[type=range] {
+	padding: 0;
+	accent-color: var(--acc);
+}
+
+/* Fila de botones del diálogo */
+.row {
+	flex-wrap: wrap;
+	display: flex;
+	gap: 10px;
+	justify-content: flex-end;
+	margin-top: 20px;
+}
+
+/* ----- Aviso de la semana y etiquetas de eventos ----- */
+.aviso {
+	margin-bottom: 20px;
+	padding: 14px 18px;
+	border-radius: 14px;
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-left: 5px solid var(--acc);
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	font-size: 16px;
+}
+
+.aviso[hidden] {
+	display: none;
+}
+
+/* Etiqueta de color: rojo = examen, verde = festivo */
+.tag {
+	display: inline-block;
+	padding: 2px 10px;
+	border-radius: 999px;
+	color: #fff;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.tag.exam { background: #d93a4a; }
+.tag.holiday { background: #1f9d62; }
+
+/* Etiquetas dentro de la cabecera de cada día */
+.dh .tag {
+	display: block;
+	width: max-content;
+	max-width: 100%;
+	margin: 6px auto 0;
+	font-size: 11px;
+	letter-spacing: .02em;
+	text-transform: none;
+}
+
+/* ----- Calendario mensual ----- */
+.cal-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 10px;
+	text-transform: capitalize;
+}
+
+.cal-grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 4px;
+}
+
+/* Iniciales de los días de la semana */
+.cw {
+	text-align: center;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--mute);
+}
+
+/* Cada día del mes */
+.cd {
+	aspect-ratio: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 3px;
+	border-radius: 10px;
+	border: 1px solid transparent;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.cd:hover { border-color: var(--acc); }
+.cd.hoy { border-color: var(--acc); font-weight: 700; }
+.cd.sel { background: var(--acc); color: #fff; }
+
+/* Puntos de color bajo el número del día */
+.dots { display: flex; gap: 3px; height: 6px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; }
+.dots i.exam { background: #d93a4a; }
+.dots i.holiday { background: #1f9d62; }
+
+/* Lista de eventos del mes */
+.ev {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 6px 0;
+	border-bottom: 1px solid var(--line);
+	font-size: 14px;
+}
+
+.ev button { padding: 2px 10px; font-size: 14px; }
+.vacio { color: var(--mute); font-size: 14px; }
+
+/* Mensaje de estado de la sincronización */
+#sst {
+	margin: 14px 0 0;
+	min-height: 1.2em;
+}
+
+/* Botón principal (Guardar) */
+.row .pri {
+	background: var(--acc);
+	color: #fff;
+	border-color: var(--acc);
+}
+
+/* ==========================================================
+   IMPRESIÓN: oculta botones y ajusta la tabla al papel
+   ========================================================== */
+@media print {
+	#edt,
+	#cal,
+	#sinc,
+	#rst {
+		display: none;
+	}
+
+	body {
+		background: #fff;
+		padding: 0;
+	}
+
+	.btns {
+		display: none;
+	}
+
+	.scroll {
+		overflow: visible;
+	}
+
+	.grid {
+		min-width: 0;
+	}
+
+	.cell {
+		min-height: 0;
+	}
+}

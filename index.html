@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="utf-8">
+	<title>Horario de clases 2DAM</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+	<!-- Fuente Inter de Google Fonts -->
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+	<!-- Estilos (ver styles.css) -->
+	<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+	<div class="wrap">
+
+		<!-- CABECERA: título y botones -->
+		<header>
+			<div>
+				<div class="eyebrow">Victoria Institute of Technology · Sanlúcar de Barrameda</div>
+				<h1>Horario de clases <span class="badge">2DAM</span></h1>
+				<!-- El JavaScript rellena este párrafo con el resumen del horario -->
+				<p class="sub" id="sub"></p>
+			</div>
+
+			<div class="btns">
+				<button id="edt">Editar</button>
+				<button id="cal">Calendario</button>
+				<button id="sinc">Sincronizar</button>
+				<button id="rst" hidden>Restablecer</button>
+				<button id="tema">Modo oscuro</button>
+				<button onclick="print()">Imprimir</button>
+			</div>
+		</header>
+
+		<!-- DIÁLOGO para editar una franja horaria -->
+		<dialog id="dlg">
+			<h2>Editar franja</h2>
+			<p id="dwho"></p>
+
+			<label for="sel">Materia</label>
+			<select id="sel"></select>
+
+			<label for="fc">Código</label>
+			<input id="fc">
+
+			<label for="fn">Nombre</label>
+			<input id="fn">
+
+			<label for="ft">Profesor/a</label>
+			<input id="ft">
+
+			<label for="fh">Color</label>
+			<input id="fh" type="range" min="0" max="359">
+
+			<div class="row">
+				<button id="sp" hidden>Separar horas</button>
+				<button id="un" hidden>Unir horas</button>
+				<button id="no">Cancelar</button>
+				<button id="ok" class="pri">Guardar</button>
+			</div>
+		</dialog>
+
+		<!-- DIÁLOGO de sincronización con un Gist privado de GitHub -->
+		<dialog id="dsinc">
+			<h2>Sincronizar</h2>
+			<p>Guarda tu horario y tu calendario en un Gist de GitHub para verlos igual en todos tus dispositivos.</p>
+
+			<label for="sid">ID del Gist</label>
+			<input id="sid" placeholder="Pega el ID o la dirección del Gist" autocomplete="off">
+
+			<label for="stk">Token</label>
+			<input id="stk" type="password" autocomplete="off">
+
+			<!-- Aquí se muestra el estado de la sincronización -->
+			<p id="sst"></p>
+
+			<div class="row">
+				<button id="sdes" hidden>Desconectar</button>
+				<button id="scl">Cerrar</button>
+				<button id="sok" class="pri">Conectar</button>
+			</div>
+		</dialog>
+
+		<!-- DIÁLOGO del calendario: apuntar exámenes y festivos -->
+		<dialog id="dcal">
+			<h2>Calendario</h2>
+			<p>Pulsa un día para elegirlo y apunta un examen o un festivo.</p>
+
+			<!-- Navegación entre meses -->
+			<div class="cal-head">
+				<button id="mp" title="Mes anterior">‹</button>
+				<b id="mt"></b>
+				<button id="mn" title="Mes siguiente">›</button>
+			</div>
+
+			<!-- Cuadrícula del mes (se genera desde JavaScript) -->
+			<div class="cal-grid" id="cg"></div>
+
+			<label for="ed">Fecha</label>
+			<input id="ed" type="date">
+
+			<label for="et">Tipo</label>
+			<select id="et">
+				<option value="exam">Examen</option>
+				<option value="holiday">Festivo</option>
+			</select>
+
+			<!-- Asignatura del examen (se oculta si el tipo es Festivo) -->
+			<div id="wmat">
+				<label for="em">Asignatura</label>
+				<select id="em"></select>
+			</div>
+
+			<label for="en">Descripción (opcional)</label>
+			<input id="en" placeholder="Ej: Examen de Acceso a Datos">
+
+			<div class="row">
+				<button id="ca">Cerrar</button>
+				<button id="ea" class="pri">Añadir</button>
+			</div>
+
+			<label>Apuntado este mes</label>
+			<div id="evl"></div>
+		</dialog>
+
+		<!-- AVISO: se rellena desde JavaScript si hay algo apuntado esta semana -->
+		<div class="aviso" id="aviso" hidden></div>
+
+		<!-- TABLA DEL HORARIO (se genera desde JavaScript en la función render) -->
+		<div class="scroll">
+			<div class="grid" id="g"></div>
+		</div>
+	</div>
+
+	<!-- Lógica de la aplicación (ver script.js) -->
+	<script src="script.js"></script>
+</body>
+
+</html>
