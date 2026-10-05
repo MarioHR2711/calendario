@@ -172,7 +172,7 @@ function renderMovil(semana) {
 		if (joined(d, i)) continue;
 		const b = block(d, i)[1], id = st.sched[d][i], m = id && st.subjects[id];
 		if (i === 3) h += '<div class="mrec">RECREO · 11:00–11:30</div>';
-		h += `<div class="cell mcell" data-d="${d}" data-i="${i}"><div class="mtime"><b>${H[i][0]}</b>${H[b][1]}</div>` +
+		h += `<div class="cell mcell" data-d="${d}" data-i="${i}" style="--n:${b - i + 1}"><div class="mtime">${H.slice(i, b + 1).map(t => `<div class="mh"><b>${t[0]}</b>${t[1]}</div>`).join('')}</div>` +
 			(m
 				? `<div class="cls" style="--h:${m.h}"><span class="c">${esc(m.c)}</span><span class="n">${esc(m.n)}</span><span class="t">${esc(m.t)}</span></div>`
 				: '<div class="mfree">Libre</div>') +

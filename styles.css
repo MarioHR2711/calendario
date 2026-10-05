@@ -604,6 +604,7 @@ input[type=range] {
 .mcell {
     display: grid;
     grid-template-columns: 64px 1fr;
+    min-height: calc(var(--n, 1) * 104px); /* altura según las horas seguidas: 2 horas = doble de alto */
     gap: 10px;
     padding: 0 0 10px;
     border-bottom: 0;
@@ -727,4 +728,64 @@ button:disabled {
 
 .aviso-edit[hidden] {
     display: none;
+}
+
+
+/* ==========================================================
+   CALENDARIO: posición fija y sin barras de scroll visibles
+   ========================================================== */
+
+/* El diálogo se ancla arriba, a la misma distancia siempre (antes se centraba
+   y se movía al cambiar de altura). Si no cabe, se puede deslizar sin barra */
+#dcal {
+    margin: 24px auto auto;
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+#dcal::-webkit-scrollbar {
+    display: none;
+}
+
+/* Fecha y tipo, uno al lado del otro */
+.dos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* Días más bajos para que todo el calendario quepa sin deslizar */
+.cd {
+    aspect-ratio: auto;
+    height: 40px;
+}
+
+/* Lista de eventos del mes: altura fija (no cambia el tamaño del diálogo) */
+#evl {
+    height: 132px;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+#evl::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* Columna de horas en móvil: una etiqueta por cada hora del bloque (como en la vista de PC) */
+.mtime {
+    display: flex;
+    flex-direction: column;
+    padding-top: 0;
+}
+
+.mh {
+    flex: 1;
+    padding-top: 14px;
+}
+
+/* Línea discontinua entre las horas de un mismo bloque */
+.mh + .mh {
+    border-top: 1px dashed var(--line);
 }

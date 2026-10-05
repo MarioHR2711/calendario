@@ -99,14 +99,20 @@
 			<!-- Cuadrícula del mes (se genera desde JavaScript) -->
 			<div class="cal-grid" id="cg"></div>
 
-			<label for="ed">Fecha</label>
-			<input id="ed" type="date">
-
-			<label for="et">Tipo</label>
-			<select id="et">
-				<option value="exam">Examen</option>
-				<option value="holiday">Festivo</option>
-			</select>
+			<!-- Fecha y tipo en dos columnas para que el diálogo sea más bajo -->
+			<div class="dos">
+				<div>
+					<label for="ed">Fecha</label>
+					<input id="ed" type="date">
+				</div>
+				<div>
+					<label for="et">Tipo</label>
+					<select id="et">
+						<option value="exam">Examen</option>
+						<option value="holiday">Festivo</option>
+					</select>
+				</div>
+			</div>
 
 			<!-- Asignatura del examen (se oculta si el tipo es Festivo) -->
 			<div id="wmat">
