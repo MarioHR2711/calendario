@@ -1,5 +1,5 @@
 /* ==========================================================
-	1. DATOS
+   1. DATOS
    ========================================================== */
 
 // Claves de localStorage: K1 = versión antigua, KEY = versión actual
@@ -39,7 +39,7 @@ const DEF = () => mk([
 ]);
 
 /* ==========================================================
-	2. CARGA DEL ESTADO (localStorage)
+   2. CARGA DEL ESTADO (localStorage)
    ========================================================== */
 
 // "st" es el estado actual de la aplicación
@@ -97,7 +97,7 @@ const save = () => {
 };
 
 /* ==========================================================
-	3. CONSTANTES Y FUNCIONES AUXILIARES
+   3. CONSTANTES Y FUNCIONES AUXILIARES
    ========================================================== */
 
 // Nombres de los días
@@ -155,6 +155,32 @@ const cortoEv = e => asigEv(e) ? asigEv(e).c : (e.n || TIPO[e.t]);
 const etiquetas = f => eventos.filter(e => e.d === f)
 	.map(e => `<span class="tag ${e.t}" title="${esc(textoEv(e))}">${esc(cortoEv(e))}</span>`).join('');
 
+// Día que muestra la vista móvil (por defecto hoy; si es fin de semana, el lunes)
+let diaMovil = hoy < 5 ? hoy : 0;
+
+// Vista móvil: pestañas de los días y lista vertical de las clases del día elegido
+function renderMovil(semana) {
+	const d = diaMovil;
+
+	// Pestañas (Lun, Mar...) y título del día con sus etiquetas de evento
+	let h = '<div class="mtabs">' + D.map((n, i) =>
+		`<button class="mtab${i === d ? ' on' : ''}${i === hoy ? ' hoy' : ''}" data-dia="${i}">${n.slice(0, 3)}</button>`).join('') + '</div>';
+	h += `<div class="mday">${D[d]} ${+semana[d].slice(8)}${etiquetas(semana[d])}</div>`;
+
+	// Una fila por cada bloque de clase (las horas seguidas de una materia se unen)
+	for (let i = 0; i < 6; i++) {
+		if (joined(d, i)) continue;
+		const b = block(d, i)[1], id = st.sched[d][i], m = id && st.subjects[id];
+		if (i === 3) h += '<div class="mrec">RECREO · 11:00–11:30</div>';
+		h += `<div class="cell mcell" data-d="${d}" data-i="${i}"><div class="mtime"><b>${H[i][0]}</b>${H[b][1]}</div>` +
+			(m
+				? `<div class="cls" style="--h:${m.h}"><span class="c">${esc(m.c)}</span><span class="n">${esc(m.n)}</span><span class="t">${esc(m.t)}</span></div>`
+				: '<div class="mfree">Libre</div>') +
+			'</div>';
+	}
+	mv.innerHTML = h;
+}
+
 // Muestra (u oculta) el aviso con los eventos de la semana actual
 function avisoSemana(semana) {
 	const lista = [];
@@ -185,7 +211,7 @@ const block = (d, i) => {
 let editing = false;
 
 /* ==========================================================
-	4. DIBUJAR EL HORARIO
+   4. DIBUJAR EL HORARIO
    ========================================================== */
 function render() {
 	// h = HTML que vamos acumulando; per = nº de periodos; used = materias distintas
@@ -229,11 +255,12 @@ function render() {
 	// Pinta todo en la rejilla y actualiza el subtítulo
 	g.innerHTML = h;
 	avisoSemana(semana); // avisa si hay exámenes o festivos esta semana
+	renderMovil(semana); // actualiza la vista móvil
 	sub.textContent = `Curso 2026/27 · ${per} periodos lectivos semanales · ${used.size} materias`;
 }
 
 /* ==========================================================
-	5. DIÁLOGO DE EDICIÓN
+   5. DIÁLOGO DE EDICIÓN
    ========================================================== */
 
 // Atajo para obtener elementos por id y referencias a elementos frecuentes
@@ -243,6 +270,7 @@ const $ = id => document.getElementById(id),
 	dlg = $('dlg'),
 	sel = $('sel'),
 	aviso = $('aviso'),
+	mv = $('mv'),
 	dcal = $('dcal');
 
 // Franja que se está editando: { d: día, a: primera franja, b: última franja }
@@ -311,6 +339,17 @@ sel.onchange = () => {
 	}
 };
 
+// Vista móvil: cambia de día con las pestañas; el resto de clics (editar) usan el mismo código que la tabla
+mv.onclick = e => {
+	const t = e.target.closest('.mtab');
+	if (t) {
+		diaMovil = +t.dataset.dia;
+		render();
+		return;
+	}
+	g.onclick(e);
+};
+
 // Botón Cancelar
 $('no').onclick = () => dlg.close();
 
@@ -372,16 +411,23 @@ $('ok').onclick = () => {
 };
 
 /* ==========================================================
-	6. BOTONES DE LA CABECERA
+   6. BOTONES DE LA CABECERA
    ========================================================== */
 
 // Botón Editar / Terminar edición
 $('edt').onclick = function () {
 	editing = !editing;
 	g.classList.toggle('edit', editing);
+	mv.classList.toggle('edit', editing);
 	this.classList.toggle('on', editing);
 	this.textContent = editing ? 'Terminar edición' : 'Editar';
 	$('rst').hidden = !editing; // "Restablecer" solo se ve en modo edición
+
+	// Mientras se edita se bloquea el resto de botones (solo quedan activos Terminar edición y Restablecer)
+	['cal', 'sinc', 'imp'].forEach(id => $(id).disabled = editing);
+
+	// La advertencia solo se ve en modo edición
+	$('wedit').hidden = !editing;
 };
 
 // Botón Restablecer: vuelve al horario original (con confirmación)
@@ -394,7 +440,7 @@ $('rst').onclick = () => {
 };
 
 /* ==========================================================
-	7. CALENDARIO (exámenes y festivos)
+   7. CALENDARIO (exámenes y festivos)
    ========================================================== */
 
 // Mes que se muestra en el calendario (siempre el día 1) y día seleccionado
@@ -494,7 +540,7 @@ $('evl').onclick = e => {
 };
 
 /* ==========================================================
-	8. SINCRONIZACIÓN (Gist de GitHub)
+   8. SINCRONIZACIÓN (Gist de GitHub)
    ========================================================== */
 
 // Claves de localStorage: credenciales del Gist y fecha de la última modificación local
@@ -659,7 +705,7 @@ estado(cred ? 'Conectado.' : 'Sin conectar.');
 if (cred) sincronizar();
 
 /* ==========================================================
-	9. TEMA CLARO / OSCURO
+   9. TEMA CLARO / OSCURO
    ========================================================== */
 const root = document.documentElement, b = $('tema');
 
@@ -676,7 +722,7 @@ b.onclick = () => {
 };
 
 /* ==========================================================
-	10. INICIO
+   10. INICIO
    ========================================================== */
 sync();    // ajusta el texto del botón de tema
 render();  // dibuja el horario por primera vez

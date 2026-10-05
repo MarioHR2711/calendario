@@ -549,3 +549,182 @@ input[type=range] {
 		min-height: 0;
 	}
 }
+
+
+/* ==========================================================
+   VISTA MÓVIL (pantallas estrechas)
+   En móvil se oculta la tabla y se muestra un día cada vez
+   ========================================================== */
+
+/* Por defecto (escritorio) la vista móvil está oculta */
+#mv {
+    display: none;
+}
+
+/* Pestañas de los días */
+.mtabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.mtab {
+    flex: 1;
+    padding: 10px 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+/* Día de hoy (borde) y día elegido (relleno) */
+.mtab.hoy {
+    border-color: var(--acc);
+}
+
+.mtab.on {
+    background: var(--acc);
+    color: #fff;
+}
+
+/* Título del día elegido, con sus etiquetas de examen/festivo */
+.mday {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 12px;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.mday .tag {
+    font-size: 12px;
+}
+
+/* Cada clase: hora a la izquierda y tarjeta a la derecha */
+.mcell {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 10px;
+    padding: 0 0 10px;
+    border-bottom: 0;
+}
+
+.mtime {
+    padding-top: 14px;
+    text-align: right;
+    color: var(--mute);
+    font-size: 13px;
+}
+
+.mtime b {
+    display: block;
+    color: var(--acc);
+    font-size: 17px;
+}
+
+.mcell .cls {
+    padding: 14px;
+}
+
+/* Hora libre (en modo edición invita a añadir una materia) */
+.mfree {
+    padding: 14px;
+    border: 2px dashed var(--line);
+    border-radius: 14px;
+    color: var(--mute);
+    font-size: 15px;
+}
+
+.edit .mfree::after {
+    content: " · pulsa para añadir";
+}
+
+/* Separador del recreo */
+.mrec {
+    margin: 2px 0 12px;
+    padding: 8px;
+    border-radius: 12px;
+    background: var(--rec);
+    color: #5b8bd6;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .2em;
+}
+
+/* Pantallas de hasta 820px: se cambia la tabla por la vista móvil */
+@media (max-width: 820px) {
+    body {
+        padding: 16px 12px;
+    }
+
+    .scroll {
+        display: none;
+    }
+
+    #mv {
+        display: block;
+    }
+
+    /* Los botones de la cabecera ocupan todo el ancho y se reparten */
+    .btns {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .btns button {
+        flex: 1 1 auto;
+        padding: 10px 12px;
+        font-size: 15px;
+    }
+
+    .sub {
+        margin-bottom: 18px;
+        font-size: 16px;
+    }
+
+    dialog {
+        padding: 18px;
+    }
+}
+
+/* Al imprimir siempre se usa la tabla completa */
+@media print {
+    .scroll {
+        display: block !important;
+    }
+
+    #mv {
+        display: none !important;
+    }
+}
+
+
+/* ==========================================================
+   MODO EDICIÓN: botones bloqueados y advertencia
+   ========================================================== */
+
+/* Botones desactivados mientras se edita */
+button:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+
+/* Cuadro informativo (mismos colores de acento que el aviso de la semana) */
+.aviso-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--acc);
+    border-radius: 14px;
+    background: var(--rec);
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.aviso-edit[hidden] {
+    display: none;
+}

@@ -27,11 +27,11 @@
 
 			<div class="btns">
 				<button id="edt">Editar</button>
+				<button id="rst" hidden>Restablecer</button>
 				<button id="cal">Calendario</button>
 				<button id="sinc">Sincronizar</button>
-				<button id="rst" hidden>Restablecer</button>
 				<button id="tema">Modo oscuro</button>
-				<button onclick="print()">Imprimir</button>
+				<button id="imp" onclick="print()">Imprimir</button>
 			</div>
 		</header>
 
@@ -126,8 +126,17 @@
 			<div id="evl"></div>
 		</dialog>
 
+		<!-- ADVERTENCIA: solo se ve mientras se está en modo edición -->
+		<div class="aviso-edit" id="wedit" role="alert" hidden>
+			<b>✏️ Estás editando el horario</b>
+			<span>Calendario, Sincronizar e Imprimir se desbloquean al pulsar <b>Terminar edición</b>. El botón <b>Restablecer</b> vuelve al horario original (los exámenes del calendario se conservan).</span>
+		</div>
+
 		<!-- AVISO: se rellena desde JavaScript si hay algo apuntado esta semana -->
 		<div class="aviso" id="aviso" hidden></div>
+
+		<!-- VISTA MÓVIL: pestañas de días y lista de clases (se genera desde JavaScript) -->
+		<div id="mv"></div>
 
 		<!-- TABLA DEL HORARIO (se genera desde JavaScript en la función render) -->
 		<div class="scroll">
