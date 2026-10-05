@@ -1,5 +1,5 @@
 /* ==========================================================
-   1. DATOS
+	1. DATOS
    ========================================================== */
 
 // Claves de localStorage: K1 = versión antigua, KEY = versión actual
@@ -33,13 +33,13 @@ const mk = sched => ({
 const DEF = () => mk([
 	["ING", "DI", "SGE", "AD", "PSP", "PSP"],      // Lunes
 	["ITE", "PMDM", "AD", "OPT", "PROY", "DI"],    // Martes
-	["DI", "AD", "OPT", "SGE", "PMDM", "ITE"],     // Miércoles
+	["PMDM", "AD", "OPT", "SGE", "PMDM", "ITE"],     // Miércoles
 	["SGE", "PSP", "AD", "ING", "DI", "DI"],       // Jueves
-	["SGE", "PMDM", "DI", "OPT", "ITE", "PROY"]    // Viernes
+	["SGE", "DI", "DI", "OPT", "ITE", "PROY"]    // Viernes
 ]);
 
 /* ==========================================================
-   2. CARGA DEL ESTADO (localStorage)
+	2. CARGA DEL ESTADO (localStorage)
    ========================================================== */
 
 // "st" es el estado actual de la aplicación
@@ -97,7 +97,7 @@ const save = () => {
 };
 
 /* ==========================================================
-   3. CONSTANTES Y FUNCIONES AUXILIARES
+	3. CONSTANTES Y FUNCIONES AUXILIARES
    ========================================================== */
 
 // Nombres de los días
@@ -185,7 +185,7 @@ const block = (d, i) => {
 let editing = false;
 
 /* ==========================================================
-   4. DIBUJAR EL HORARIO
+	4. DIBUJAR EL HORARIO
    ========================================================== */
 function render() {
 	// h = HTML que vamos acumulando; per = nº de periodos; used = materias distintas
@@ -233,7 +233,7 @@ function render() {
 }
 
 /* ==========================================================
-   5. DIÁLOGO DE EDICIÓN
+	5. DIÁLOGO DE EDICIÓN
    ========================================================== */
 
 // Atajo para obtener elementos por id y referencias a elementos frecuentes
@@ -372,7 +372,7 @@ $('ok').onclick = () => {
 };
 
 /* ==========================================================
-   6. BOTONES DE LA CABECERA
+	6. BOTONES DE LA CABECERA
    ========================================================== */
 
 // Botón Editar / Terminar edición
@@ -394,7 +394,7 @@ $('rst').onclick = () => {
 };
 
 /* ==========================================================
-   7. CALENDARIO (exámenes y festivos)
+	7. CALENDARIO (exámenes y festivos)
    ========================================================== */
 
 // Mes que se muestra en el calendario (siempre el día 1) y día seleccionado
@@ -494,7 +494,7 @@ $('evl').onclick = e => {
 };
 
 /* ==========================================================
-   8. SINCRONIZACIÓN (Gist de GitHub)
+	8. SINCRONIZACIÓN (Gist de GitHub)
    ========================================================== */
 
 // Claves de localStorage: credenciales del Gist y fecha de la última modificación local
@@ -659,7 +659,7 @@ estado(cred ? 'Conectado.' : 'Sin conectar.');
 if (cred) sincronizar();
 
 /* ==========================================================
-   9. TEMA CLARO / OSCURO
+	9. TEMA CLARO / OSCURO
    ========================================================== */
 const root = document.documentElement, b = $('tema');
 
@@ -676,7 +676,7 @@ b.onclick = () => {
 };
 
 /* ==========================================================
-   10. INICIO
+	10. INICIO
    ========================================================== */
 sync();    // ajusta el texto del botón de tema
 render();  // dibuja el horario por primera vez
