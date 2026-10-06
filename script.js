@@ -1,5 +1,5 @@
 /* ==========================================================
-   1. DATOS
+	1. DATOS
    ========================================================== */
 
 // Claves de localStorage: K1 = versión antigua, KEY = versión actual
@@ -8,7 +8,7 @@ const K1 = 'horario2dam-v1', KEY = 'horario2dam-v2';
 // Catálogo de materias. Cada una tiene:
 // c = código, n = nombre, t = profesor/a, h = tono de color (0-359)
 const SUB = {
-	ING:  { c: "ING-PRO", n: "Inglés profesional", t: "Profesor/a de Inglés", h: 350 },
+	ING:  { c: "ING-PRO", n: "Inglés profesional", t: "María Nuñez Carbonell", h: 350 },
 	ITE:  { c: "ITE-II", n: "Itinerario personal para la empleabilidad II", t: "Beatriz González", h: 215 },
 	DI:   { c: "DI", n: "Desarrollo de Interfaces", t: "Daniel Toro", h: 10 },
 	SGE:  { c: "SGE", n: "Sistemas de Gestión Empresarial", t: "Francisco Yuste", h: 65 },
@@ -39,7 +39,7 @@ const DEF = () => mk([
 ]);
 
 /* ==========================================================
-   2. CARGA DEL ESTADO (localStorage)
+	2. CARGA DEL ESTADO (localStorage)
    ========================================================== */
 
 // "st" es el estado actual de la aplicación
@@ -97,7 +97,7 @@ const save = () => {
 };
 
 /* ==========================================================
-   3. CONSTANTES Y FUNCIONES AUXILIARES
+	3. CONSTANTES Y FUNCIONES AUXILIARES
    ========================================================== */
 
 // Nombres de los días
@@ -181,6 +181,38 @@ function renderMovil(semana) {
 	mv.innerHTML = h;
 }
 
+// Convierte una hora "H:MM" en minutos desde medianoche
+const aMin = s => {
+	const [h, m] = s.split(':');
+	return +h * 60 + +m;
+};
+
+// Marca con un reborde la clase que está en curso ahora mismo (y el recreo cuando toca)
+function marcarAhora() {
+	// Quita las marcas anteriores
+	document.querySelectorAll('.ahora').forEach(x => x.classList.remove('ahora'));
+
+	const ahora = new Date();
+	const d = (ahora.getDay() + 6) % 7; // 0 = lunes ... 6 = domingo
+	const min = ahora.getHours() * 60 + ahora.getMinutes();
+	if (d > 4) return; // fin de semana: no hay clases
+
+	// Recreo (11:00–11:30): en móvil solo se marca si se está viendo el día de hoy
+	if (min >= aMin('11:00') && min < aMin('11:30')) {
+		document.querySelectorAll('.rec').forEach(x => x.classList.add('ahora'));
+		if (diaMovil === d) document.querySelectorAll('.mrec').forEach(x => x.classList.add('ahora'));
+		return;
+	}
+
+	// Franja horaria actual (si no hay ninguna, es que estamos fuera del horario de clases)
+	const i = H.findIndex(t => min >= aMin(t[0]) && min < aMin(t[1]));
+	if (i < 0) return;
+
+	// Bloque al que pertenece: si hay horas seguidas, se marca la tarjeta entera
+	const a = block(d, i)[0];
+	document.querySelectorAll(`.cell[data-d="${d}"][data-i="${a}"] .cls`).forEach(x => x.classList.add('ahora'));
+}
+
 // Muestra (u oculta) el aviso con los eventos de la semana actual
 function avisoSemana(semana) {
 	const lista = [];
@@ -211,7 +243,7 @@ const block = (d, i) => {
 let editing = false;
 
 /* ==========================================================
-   4. DIBUJAR EL HORARIO
+	4. DIBUJAR EL HORARIO
    ========================================================== */
 function render() {
 	// h = HTML que vamos acumulando; per = nº de periodos; used = materias distintas
@@ -256,11 +288,12 @@ function render() {
 	g.innerHTML = h;
 	avisoSemana(semana); // avisa si hay exámenes o festivos esta semana
 	renderMovil(semana); // actualiza la vista móvil
+	marcarAhora(); // marca la clase en curso
 	sub.textContent = `Curso 2026/27 · ${per} periodos lectivos semanales · ${used.size} materias`;
 }
 
 /* ==========================================================
-   5. DIÁLOGO DE EDICIÓN
+	5. DIÁLOGO DE EDICIÓN
    ========================================================== */
 
 // Atajo para obtener elementos por id y referencias a elementos frecuentes
@@ -411,7 +444,7 @@ $('ok').onclick = () => {
 };
 
 /* ==========================================================
-   6. BOTONES DE LA CABECERA
+	6. BOTONES DE LA CABECERA
    ========================================================== */
 
 // Botón Editar / Terminar edición
@@ -440,7 +473,7 @@ $('rst').onclick = () => {
 };
 
 /* ==========================================================
-   7. CALENDARIO (exámenes y festivos)
+	7. CALENDARIO (exámenes y festivos)
    ========================================================== */
 
 // Mes que se muestra en el calendario (siempre el día 1) y día seleccionado
@@ -540,7 +573,7 @@ $('evl').onclick = e => {
 };
 
 /* ==========================================================
-   8. SINCRONIZACIÓN (Gist de GitHub)
+	8. SINCRONIZACIÓN (Gist de GitHub)
    ========================================================== */
 
 // Claves de localStorage: credenciales del Gist y fecha de la última modificación local
@@ -705,7 +738,7 @@ estado(cred ? 'Conectado.' : 'Sin conectar.');
 if (cred) sincronizar();
 
 /* ==========================================================
-   9. TEMA CLARO / OSCURO
+	9. TEMA CLARO / OSCURO
    ========================================================== */
 const root = document.documentElement, b = $('tema');
 
@@ -722,7 +755,13 @@ b.onclick = () => {
 };
 
 /* ==========================================================
-   10. INICIO
+	10. INICIO
    ========================================================== */
 sync();    // ajusta el texto del botón de tema
 render();  // dibuja el horario por primera vez
+
+// La marca de "ahora" se actualiza cada 30 segundos y al volver a la pestaña
+setInterval(marcarAhora, 30000);
+document.addEventListener('visibilitychange', () => {
+	if (!document.hidden) marcarAhora();
+});
