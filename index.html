@@ -6,7 +6,7 @@
 	<title>Horario de clases 2DAM</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-	<!-- Icono de la pestaña (favicon.ico y favicon.svg) y del acceso directo en iPhone/iPad (apple-touch-icon.png) -->
+	<!-- Icono de la pestaña (favicon.ico) -->
 	<link rel="icon" href="favicon.ico" sizes="32x32">
 
 	<!-- Fuente Inter de Google Fonts -->
@@ -135,21 +135,32 @@
 			<div id="evl"></div>
 		</dialog>
 
-		<!-- ADVERTENCIA: solo se ve mientras se está en modo edición -->
-		<div class="aviso-edit" id="wedit" role="alert" hidden>
-			<b>✏️ Estás editando el horario</b>
-			<span>Calendario, Sincronizar e Imprimir se desbloquean al pulsar <b>Terminar edición</b>. El botón <b>Restablecer</b> vuelve al horario original (los exámenes del calendario se conservan).</span>
-		</div>
+		<!-- CUERPO EN DOS COLUMNAS: avisos a la izquierda y horario a la derecha,
+		     así el horario siempre queda en el mismo sitio aunque los avisos cambien -->
+		<div class="cuerpo">
 
-		<!-- AVISO: se rellena desde JavaScript si hay algo apuntado esta semana -->
-		<div class="aviso" id="aviso" hidden></div>
+			<!-- COLUMNA IZQUIERDA: avisos -->
+			<aside class="lateral">
+				<!-- ADVERTENCIA: solo se ve mientras se está en modo edición -->
+				<div class="aviso-edit" id="wedit" role="alert" hidden>
+					<b>✏️ Estás editando el horario</b>
+					<span>Calendario, Sincronizar e Imprimir se desbloquean al pulsar <b>Terminar edición</b>. El botón <b>Restablecer</b> vuelve al horario original (los exámenes del calendario se conservan).</span>
+				</div>
 
-		<!-- VISTA MÓVIL: pestañas de días y lista de clases (se genera desde JavaScript) -->
-		<div id="mv"></div>
+				<!-- AVISO: exámenes y festivos de esta semana y de la próxima (se rellena desde JavaScript) -->
+				<div class="aviso" id="aviso"></div>
+			</aside>
 
-		<!-- TABLA DEL HORARIO (se genera desde JavaScript en la función render) -->
-		<div class="scroll">
-			<div class="grid" id="g"></div>
+			<!-- COLUMNA PRINCIPAL: horario -->
+			<main class="principal">
+				<!-- VISTA MÓVIL: pestañas de días y lista de clases (se genera desde JavaScript) -->
+				<div id="mv"></div>
+
+				<!-- TABLA DEL HORARIO (se genera desde JavaScript en la función render) -->
+				<div class="scroll">
+					<div class="grid" id="g"></div>
+				</div>
+			</main>
 		</div>
 	</div>
 

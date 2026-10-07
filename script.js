@@ -128,10 +128,10 @@ const DS = [...D, 'Sábado', 'Domingo'];
 // Convierte una fecha en texto "AAAA-MM-DD" (hora local)
 const ymd = x => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
 
-// Fechas (AAAA-MM-DD) de la semana actual: de lunes a domingo
-const semanaActual = () => {
+// Fechas (AAAA-MM-DD) de una semana, de lunes a domingo: 0 = esta semana, 1 = la próxima
+const semanaActual = (desp = 0) => {
 	const l = new Date();
-	l.setDate(l.getDate() - hoy); // retrocede hasta el lunes
+	l.setDate(l.getDate() - hoy + 7 * desp); // retrocede hasta el lunes (y avanza las semanas indicadas)
 	return Array.from({ length: 7 }, (_, i) => {
 		const x = new Date(l);
 		x.setDate(l.getDate() + i);
@@ -213,14 +213,30 @@ function marcarAhora() {
 	document.querySelectorAll(`.cell[data-d="${d}"][data-i="${a}"] .cls`).forEach(x => x.classList.add('ahora'));
 }
 
-// Muestra (u oculta) el aviso con los eventos de la semana actual
+// Muestra (u oculta) el aviso con los eventos de esta semana y de la próxima
 function avisoSemana(semana) {
-	const lista = [];
-	semana.forEach((f, i) => eventos.filter(e => e.d === f).forEach(e => lista.push({ ...e, dia: `${DS[i]} ${+f.slice(8)}` })));
-	aviso.hidden = lista.length === 0;
-	aviso.innerHTML = lista.length
-		? '<b>📌 Esta semana tienes:</b>' + lista.map(e => `<div><span class="tag ${e.t}">${TIPO[e.t]}</span> ${e.dia} · ${esc(textoEv(e))}</div>`).join('')
+	// Eventos de una semana, con el nombre del día: [{ ...evento, dia: "Lunes 12" }]
+	const deSemana = fechas => {
+		const lista = [];
+		fechas.forEach((f, i) => eventos.filter(e => e.d === f).forEach(e => lista.push({ ...e, dia: `${DS[i]} ${+f.slice(8)}` })));
+		return lista;
+	};
+
+	// Bloque con un título y sus eventos (vacío si no hay ninguno)
+	const bloque = (titulo, lista) => lista.length
+		? `<b>${titulo}</b>` + lista.map(e => `<div><span class="tag ${e.t}">${TIPO[e.t]}</span> ${e.dia} · ${esc(textoEv(e))}</div>`).join('')
 		: '';
+
+	// Esta semana y la próxima; solo se muestran los bloques que tengan algo
+	const bloques = [
+		bloque('📌 Esta semana tienes:', deSemana(semana)),
+		bloque('📅 La próxima semana:', deSemana(semanaActual(1)))
+	].filter(Boolean);
+
+	aviso.classList.toggle('vacio', bloques.length === 0); // en pantallas estrechas se oculta si no hay nada
+	aviso.innerHTML = bloques.length
+		? bloques.map(h => `<div class="aviso-bloque">${h}</div>`).join('')
+		: '<div class="sin-avisos">✓ Sin exámenes ni festivos esta semana ni la próxima.</div>';
 }
 
 // Escapa caracteres especiales para insertar texto de forma segura en HTML

@@ -857,3 +857,84 @@ button:disabled {
 		display: none;
 	}
 }
+
+
+/* Bloques del aviso: "Esta semana" y "La próxima semana" */
+.aviso-bloque {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.aviso-bloque + .aviso-bloque {
+	margin-top: 6px;
+	padding-top: 10px;
+	border-top: 1px dashed var(--line);
+}
+
+
+/* ==========================================================
+	DISEÑO EN DOS COLUMNAS (pantallas anchas)
+	Avisos a la izquierda y horario a la derecha: el horario
+	ya no se desplaza cuando aparecen o desaparecen avisos
+	========================================================== */
+.cuerpo {
+	display: grid;
+	grid-template-columns: 280px minmax(0, 1fr);
+	gap: 20px;
+	align-items: start;
+}
+
+/* Columna de avisos: se queda fija al hacer scroll */
+.lateral {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	position: sticky;
+	top: 16px;
+}
+
+.lateral .aviso,
+.lateral .aviso-edit {
+	margin-bottom: 0;
+	font-size: 15px;
+}
+
+/* El horario puede ser algo más estrecho porque comparte el ancho con la columna */
+.principal {
+	min-width: 0;
+}
+
+@media (min-width: 1101px) {
+	.grid {
+		min-width: 760px;
+	}
+}
+
+/* Mensaje cuando no hay nada apuntado */
+.sin-avisos {
+	color: var(--mute);
+}
+
+/* Pantallas de hasta 1100px (y al imprimir): una sola columna, avisos encima del horario */
+@media (max-width: 1100px) {
+	.cuerpo {
+		grid-template-columns: 1fr;
+		gap: 0;
+	}
+
+	.lateral {
+		display: block;
+		position: static;
+	}
+
+	.lateral .aviso,
+	.lateral .aviso-edit {
+		margin-bottom: 16px;
+	}
+
+	/* Si no hay avisos, no se ocupa espacio */
+	.aviso.vacio {
+		display: none;
+	}
+}
