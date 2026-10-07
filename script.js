@@ -31,11 +31,11 @@ const mk = sched => ({
 
 // Horario por defecto: 5 días (L-V) x 6 franjas horarias
 const DEF = () => mk([
-	["ING", "DI", "SGE", "AD", "PSP", "PSP"],      // Lunes
+	["ING", "DI", "SGE", "AD", "OPT", "OPT"],      // Lunes
 	["ITE", "PMDM", "AD", "OPT", "PROY", "DI"],    // Martes
-	["PMDM", "AD", "OPT", "SGE", "PMDM", "ITE"],     // Miércoles
+	["PMDM", "AD", "PSP", "SGE", "PMDM", "ITE"],     // Miércoles
 	["SGE", "PSP", "AD", "ING", "DI", "DI"],       // Jueves
-	["SGE", "DI", "DI", "OPT", "ITE", "PROY"]    // Viernes
+	["SGE", "DI", "DI", "PSP", "ITE", "PROY"]    // Viernes
 ]);
 
 /* ==========================================================
