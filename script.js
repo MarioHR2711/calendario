@@ -2,41 +2,25 @@
 	1. DATOS
    ========================================================== */
 
-// Claves de localStorage: K1 = versión antigua, KEY = versión actual
-const K1 = 'horario2dam-v1', KEY = 'horario2dam-v2';
+// Clave de localStorage del horario
+const KEY = 'horario2dam-v2';
 
-// Catálogo de materias. Cada una tiene:
-// c = código, n = nombre, t = profesor/a, h = tono de color (0-359)
-const SUB = {
-	ING:  { c: "ING-PRO", n: "Inglés profesional", t: "María Nuñez Carbonell", h: 350 },
-	ITE:  { c: "ITE-II", n: "Itinerario personal para la empleabilidad II", t: "Beatriz González", h: 215 },
-	DI:   { c: "DI", n: "Desarrollo de Interfaces", t: "Daniel Toro", h: 10 },
-	SGE:  { c: "SGE", n: "Sistemas de Gestión Empresarial", t: "Francisco Yuste", h: 65 },
-	PMDM: { c: "PMDM", n: "Programación Multimedia y Dispositivos Móviles", t: "Daniel Toro", h: 255 },
-	AD:   { c: "AD", n: "Acceso a Datos", t: "Patricia Pazos", h: 290 },
-	PSP:  { c: "PSP", n: "Programación de Servicios y Procesos", t: "Juan Sevillano", h: 170 },
-	OPT:  { c: "OPT_PY", n: "Optativa: Introducción a Python", t: "Juan Sevillano", h: 45 },
-	PROY: { c: "PROY", n: "Proyecto Intermodular", t: "Patricia Pazos", h: 35 }
-};
-
-// Crea un estado nuevo a partir de un horario:
-// - subjects: copia independiente del catálogo
-// - sched: matriz [día][franja] con la clave de la materia
+// Estado nuevo y VACÍO: sin asignaturas ni clases y sin configurar (setup = null)
+// - setup: { inst, curso } (se piden la primera vez)
+// - subjects: asignaturas { clave: { c: abreviatura, n: nombre, t: profesor/a, h: tono de color 0-359 } }
+// - sched: matriz [día][franja] con la clave de la materia (5 días x 6 franjas)
 // - split: matriz [día][franja] que indica si esa franja está "separada" de la anterior
-const mk = sched => ({
-	subjects: JSON.parse(JSON.stringify(SUB)),
-	sched,
-	split: sched.map(() => Array(6).fill(false))
+const DEF = () => ({
+	setup: null,
+	subjects: {},
+	sched: Array.from({ length: 5 }, () => Array(6).fill(null)),
+	split: Array.from({ length: 5 }, () => Array(6).fill(false))
 });
 
-// Horario por defecto: 5 días (L-V) x 6 franjas horarias
-const DEF = () => mk([
-	["ING", "DI", "SGE", "AD", "OPT", "OPT"],      // Lunes
-	["ITE", "PMDM", "AD", "OPT", "PROY", "DI"],    // Martes
-	["PMDM", "AD", "PSP", "SGE", "PMDM", "ITE"],     // Miércoles
-	["SGE", "PSP", "AD", "ING", "DI", "DI"],       // Jueves
-	["SGE", "DI", "DI", "PSP", "ITE", "PROY"]    // Viernes
-]);
+// Datos del centro de los horarios creados con la versión antigua (que no guardaba instituto ni curso):
+// así, al cargar uno de esos horarios o un Gist antiguo no se vuelve a pedir nada
+const ANTIGUO = { inst: 'Victoria Institute of Technology · Sanlúcar de Barrameda', curso: '2DAM' };
+const conAsignaturas = x => !!x && !!x.subjects && Object.keys(x.subjects).length > 0;
 
 /* ==========================================================
 	2. CARGA DEL ESTADO (localStorage)
@@ -44,32 +28,13 @@ const DEF = () => mk([
 
 // "st" es el estado actual de la aplicación
 let st;
-
-// Intenta leer lo guardado previamente
 try {
 	st = JSON.parse(localStorage.getItem(KEY));
 } catch (e) { }
 
-// Si no hay datos válidos, se usa el horario por defecto
-if (!st || !st.sched || !st.split) {
-	st = DEF();
-
-	// Migración: recupera los cambios guardados con la versión anterior
-	try {
-		const o = JSON.parse(localStorage.getItem(K1));
-		if (o && o.subjects && o.sched) {
-			st.subjects = o.subjects;
-			// En la versión antigua, las celdas vacías heredaban la materia anterior
-			st.sched = o.sched.map(day => {
-				let p = null;
-				return day.map(c => {
-					p = c ? c[0] : p;
-					return p;
-				});
-			});
-		}
-	} catch (e) { }
-}
+// Si no hay datos válidos (persona nueva), se parte de un horario vacío
+if (!st || !st.sched || !st.split || !st.subjects) st = DEF();
+if (!st.setup) st.setup = conAsignaturas(st) ? { ...ANTIGUO } : null; // horario antiguo: se le asignan los datos del centro; si está vacío, se pide la configuración
 
 // Calendario: lista de eventos { id, d: fecha AAAA-MM-DD, t: 'exam' | 'holiday', n: descripción, s: clave de la asignatura (solo exámenes) }
 // Se guarda aparte para que "Restablecer" no borre los exámenes ni los festivos
@@ -305,7 +270,11 @@ function render() {
 	avisoSemana(semana); // avisa si hay exámenes o festivos esta semana
 	renderMovil(semana); // actualiza la vista móvil
 	marcarAhora(); // marca la clase en curso
-	sub.textContent = `Curso 2026/27 · ${per} periodos lectivos semanales · ${used.size} materias`;
+	$('eb').textContent = st.setup ? st.setup.inst : '';
+	$('bd').textContent = st.setup ? st.setup.curso : '';
+	$('bd').hidden = !st.setup;
+	const anio = new Date().getFullYear() - (new Date().getMonth() < 6 ? 1 : 0); // curso escolar actual
+	sub.textContent = `Curso ${anio}/${String(anio + 1).slice(2)} · ${per} periodos lectivos semanales · ${used.size} materias`;
 }
 
 /* ==========================================================
@@ -469,7 +438,7 @@ $('edt').onclick = function () {
 	g.classList.toggle('edit', editing);
 	mv.classList.toggle('edit', editing);
 	this.classList.toggle('on', editing);
-	this.textContent = editing ? 'Terminar edición' : 'Editar';
+	this.textContent = editing ? 'Listo' : 'Editar';
 	$('rst').hidden = !editing; // "Restablecer" solo se ve en modo edición
 
 	// Mientras se edita se bloquea el resto de botones (solo quedan activos Terminar edición y Restablecer)
@@ -477,12 +446,15 @@ $('edt').onclick = function () {
 
 	// La advertencia solo se ve en modo edición
 	$('wedit').hidden = !editing;
+	$('acc').classList.toggle('on', editing); // fila Restablecer / Borrar calendario
 };
 
 // Botón Restablecer: vuelve al horario original (con confirmación)
 $('rst').onclick = () => {
-	if (confirm('¿Volver al horario original?')) {
-		st = DEF();
+	if (confirm('¿Vaciar el horario? Se conservan tus asignaturas y los exámenes del calendario.')) {
+		const v = DEF();
+		st.sched = v.sched;
+		st.split = v.split;
 		save();
 		render();
 	}
@@ -629,6 +601,7 @@ const errHttp = r => new Error(
 // Muestra el estado en el diálogo y en el botón de la cabecera
 function estado(msg, error) {
 	$('sst').textContent = msg;
+	$('vst').textContent = msg; // también en la pantalla de configuración inicial
 	$('sinc').textContent = !cred ? 'Sincronizar' : error ? 'Sincronizar ⚠' : 'Sincronizar ✓';
 }
 
@@ -668,6 +641,7 @@ async function sincronizar() {
 			// El Gist es más reciente: se aplican sus datos aquí
 			aplicandoRemoto = true;
 			st = r.st;
+			if (!st.setup) st.setup = conAsignaturas(st) ? { ...ANTIGUO } : null; // Gist antiguo: sin instituto guardado
 			eventos = Array.isArray(r.eventos) ? r.eventos : [];
 			save();
 			saveEv();
@@ -675,6 +649,8 @@ async function sincronizar() {
 			setMod(r.mod);
 			render();
 			if (dcal.open) { llenarAsignaturas(); drawCal(); }
+			if (st.setup) $('conf').hidden = true; // ya hay datos: no hace falta la configuración inicial
+			else if (!$('conf').hidden) abrirSetup();
 			estado('Datos cargados desde el Gist.');
 		} else if (local > r.mod) {
 			// Los datos de este dispositivo son más recientes
@@ -771,10 +747,149 @@ b.onclick = () => {
 };
 
 /* ==========================================================
+	11. CONFIGURACIÓN INICIAL (instituto, curso y asignaturas)
+   ========================================================== */
+const conf = $('conf'), crows = $('crows');
+
+// Asignaturas que se están escribiendo en el formulario
+let filas = [];
+
+// Dibuja una fila de campos por asignatura (la primera enseña un ejemplo)
+function dibujarFilas() {
+	crows.textContent = '';
+	filas.forEach((r, k) => {
+		const d = document.createElement('div');
+		d.className = 'srow';
+		[['c', 'Abreviatura', 'Ej.: LEN'], ['n', 'Nombre de la asignatura', 'Ej.: Lengua y Literatura'], ['t', 'Profesor/a', 'Ej.: Ana Pérez']].forEach(([f, ph, ej]) => {
+			const x = document.createElement('input');
+			x.placeholder = k === 0 ? ej : ph;
+			x.value = r[f] || '';
+			x.setAttribute('aria-label', ph);
+			x.oninput = () => { r[f] = x.value; };
+			d.appendChild(x);
+		});
+		const del = document.createElement('button');
+		del.type = 'button';
+		del.textContent = '✕';
+		del.setAttribute('aria-label', 'Quitar asignatura');
+		del.onclick = () => {
+			filas.splice(k, 1);
+			if (!filas.length) filas.push({ c: '', n: '', t: '', h: 10 });
+			dibujarFilas();
+		};
+		d.appendChild(del);
+		crows.appendChild(d);
+	});
+}
+
+// Abre la configuración (obligatoria la primera vez)
+function abrirSetup() {
+	const primera = !st.setup;
+	// Horarios antiguos (con asignaturas pero sin instituto): se conservan sus asignaturas y solo se piden instituto y curso
+	const hayDatos = Object.keys(st.subjects).length > 0;
+	const ini = st.setup || (hayDatos ? { inst: '', curso: '' } : { inst: '', curso: '' });
+	filas = Object.entries(st.subjects).map(([id, m]) => ({ id, ...m }));
+	if (!filas.length) filas.push({ c: '', n: '', t: '', h: 10 });
+	$('ci').value = ini.inst;
+	$('cc').value = ini.curso;
+	$('ccan').hidden = primera;                       // la primera vez no se puede cancelar
+	$('cok').textContent = primera ? 'Crear horario' : 'Guardar cambios';
+	$('vinc').hidden = $('vo').hidden = !primera;     // vincular un calendario existente: solo al crear
+	$('cerr').textContent = '';
+	dibujarFilas();
+	conf.hidden = false;
+	$('ci').focus();
+}
+
+$('cadd').onclick = () => {
+	filas.push({ c: '', n: '', t: '', h: (filas.length * 47 + 10) % 360 });
+	dibujarFilas();
+	crows.lastChild.querySelector('input').focus();
+};
+$('ccan').onclick = () => { conf.hidden = true; };
+
+// Botón Crear horario / Guardar cambios
+$('cok').onclick = () => {
+	const inst = $('ci').value.trim(), curso = $('cc').value.trim(), ok = filas.filter(r => (r.n || '').trim());
+	if (!inst || !curso || !ok.length) {
+		$('cerr').textContent = !inst ? 'Introduce el nombre de tu instituto.' : !curso ? 'Introduce tu curso.' : 'Añade al menos una asignatura con nombre.';
+		return;
+	}
+	const primera = !st.setup, subj = {};
+	ok.forEach((r, k) => {
+		const n = r.n.trim();
+		subj[r.id || 's' + Date.now() + '_' + k] = { c: (r.c || '').trim() || n.slice(0, 6).toUpperCase(), n, t: (r.t || '').trim(), h: r.h };
+	});
+	// Las asignaturas quitadas desaparecen también de las franjas donde estaban
+	st.sched.forEach(day => day.forEach((v, j) => { if (v && !subj[v]) day[j] = null; }));
+	st.subjects = subj;
+	st.setup = { inst, curso };
+	save();
+	conf.hidden = true;
+	render();
+	if (primera && !editing) $('edt').click(); // empieza en modo edición para colocar las clases
+};
+
+// Botón Vincular calendario existente: conecta con el Gist y carga sus datos
+$('vbt').onclick = async () => {
+	const id = $('vid').value.trim().split('/').pop(), token = $('vtk').value.trim();
+	if (!id || !token) { estado('Faltan el ID o el token.', true); return; }
+	cred = { id, token };
+	try { localStorage.setItem(KSYNC, JSON.stringify(cred)); } catch (e) { }
+	await sincronizar();
+	if (st.setup) return; // se cargó un calendario completo: la configuración se cierra sola
+	if ($('sinc').textContent.includes('⚠')) {
+		// Falló: no se guardan credenciales erróneas
+		const msg = $('vst').textContent;
+		cred = null;
+		try { localStorage.removeItem(KSYNC); } catch (e) { }
+		estado(msg, false);
+	} else {
+		estado('Vinculado. El Gist aún no tiene un horario: créalo aquí abajo y se guardará allí.');
+	}
+};
+
+/* ==========================================================
+	12. BORRAR EL CALENDARIO (pide escribir el nombre del centro)
+   ========================================================== */
+const dbor = $('dbor');
+
+// Compara nombres sin fijarse en mayúsculas ni en espacios repetidos
+const norm = x => x.trim().replace(/\s+/g, ' ').toLowerCase();
+
+// ¿Coincide lo escrito con el nombre del centro?
+const nombreOk = () => !!st.setup && norm($('bin').value) !== '' && norm($('bin').value) === norm(st.setup.inst);
+
+$('bor').onclick = () => {
+	$('bnom').textContent = st.setup ? st.setup.inst : '';
+	$('bin').value = '';
+	$('bok').disabled = true;
+	dbor.showModal();
+	$('bin').focus();
+};
+$('bin').oninput = () => { $('bok').disabled = !nombreOk(); };
+$('bcan').onclick = () => dbor.close();
+
+$('bok').onclick = () => {
+	if (!nombreOk()) return;
+	clearTimeout(temporizador); // cancela cualquier subida pendiente al Gist
+	[KEY, KEV, KSYNC, KMOD].forEach(k => { try { localStorage.removeItem(k); } catch (e) { } });
+	cred = null;
+	eventos = [];
+	st = DEF();
+	estado('Sin conectar.');
+	dbor.close();
+	if (editing) $('edt').click(); // sale del modo edición
+	render();
+	abrirSetup();                  // vuelve a la configuración inicial
+};
+
+/* ==========================================================
 	10. INICIO
    ========================================================== */
 sync();    // ajusta el texto del botón de tema
 render();  // dibuja el horario por primera vez
+if (!st.setup) abrirSetup(); // persona nueva: la configuración es obligatoria
 
 // La marca de "ahora" se actualiza cada 30 segundos y al volver a la pestaña
 setInterval(marcarAhora, 30000);

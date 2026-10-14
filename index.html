@@ -22,21 +22,77 @@
 		<!-- CABECERA: título y botones -->
 		<header>
 			<div>
-				<div class="eyebrow">Victoria Institute of Technology · Sanlúcar de Barrameda</div>
-				<h1>Horario de clases <span class="badge">2DAM</span></h1>
+				<div class="eyebrow" id="eb"></div>
+				<h1>Horario de clases <span class="badge" id="bd" hidden></span></h1>
 				<!-- El JavaScript rellena este párrafo con el resumen del horario -->
 				<p class="sub" id="sub"></p>
 			</div>
 
+			<div class="hdr-btns">
 			<div class="btns">
 				<button id="edt">Editar</button>
-				<button id="rst" hidden>Restablecer</button>
 				<button id="cal">Calendario</button>
 				<button id="sinc">Sincronizar</button>
 				<button id="tema">Modo oscuro</button>
 				<button id="imp" onclick="print()">Imprimir</button>
 			</div>
+
+			<!-- Fila de acciones de edición: justo debajo de los botones; reserva su sitio siempre, pero solo se ve al editar -->
+			<div class="btns2" id="acc">
+				<button id="rst">Restablecer</button>
+				<button id="bor" class="peligro">Borrar calendario</button>
+			</div>
+		</div>
 		</header>
+
+		<!-- DIÁLOGO para borrar todo el calendario (pide escribir el nombre del centro) -->
+		<dialog id="dbor">
+			<h2>Borrar calendario</h2>
+			<p>Se borrarán el horario, las asignaturas, los exámenes y festivos, y los datos del centro de este dispositivo. No se puede deshacer. Si tienes la sincronización con GitHub, se desconectará de este dispositivo, pero los datos del Gist no se tocan.</p>
+			<label for="bin">Para confirmar, escribe el nombre de tu centro: <b id="bnom"></b></label>
+			<input id="bin" autocomplete="off">
+			<div class="row">
+				<button id="bcan">Cancelar</button>
+				<button id="bok" disabled>Borrar todo</button>
+			</div>
+		</dialog>
+
+		<!-- CONFIGURACIÓN INICIAL: obligatoria la primera vez (instituto, curso y asignaturas) -->
+		<div id="conf" hidden>
+			<div class="sbox">
+				<h2>Configura tu horario</h2>
+				<p>Cuéntanos dónde estudias y qué asignaturas tienes. Después las colocarás en el horario, que empieza vacío.</p>
+
+				<!-- Vincular un calendario ya existente (Gist de GitHub): solo la primera vez -->
+				<div class="vinc" id="vinc">
+					<b>¿Ya tienes un calendario?</b>
+					<span>Vincula el Gist de GitHub que usas en otro dispositivo y se cargará todo automáticamente.</span>
+					<label for="vid">ID del Gist</label>
+					<input id="vid" placeholder="Pega el ID o la dirección del Gist" autocomplete="off">
+					<label for="vtk">Token</label>
+					<input id="vtk" type="password" placeholder="Pega aquí tu token" autocomplete="off">
+					<p class="note" id="vst"></p>
+					<button id="vbt" type="button">Vincular calendario existente</button>
+				</div>
+				<p class="o" id="vo">o crea uno nuevo</p>
+
+				<label for="ci">Instituto</label>
+				<input id="ci" placeholder="Nombre de tu instituto" autocomplete="off">
+				<label for="cc">Curso</label>
+				<input id="cc" placeholder="p. ej. 2DAM, 1º Bachillerato A" autocomplete="off">
+
+				<label>Asignaturas del curso</label>
+				<p class="note">La abreviatura es un nombre corto que eliges tú para verlo en el horario; no es el código oficial de la Junta de Andalucía. Ejemplo: <b>LEN</b> · Lengua y Literatura · Ana Pérez.</p>
+				<div id="crows"></div>
+				<button id="cadd" type="button">+ Añadir asignatura</button>
+
+				<p class="err" id="cerr"></p>
+				<div class="row">
+					<button id="ccan" hidden>Cancelar</button>
+					<button id="cok" class="pri">Crear horario</button>
+				</div>
+			</div>
+		</div>
 
 		<!-- DIÁLOGO para editar una franja horaria -->
 		<dialog id="dlg">
@@ -46,7 +102,7 @@
 			<label for="sel">Materia</label>
 			<select id="sel"></select>
 
-			<label for="fc">Código</label>
+			<label for="fc">Abreviatura (no es el código oficial)</label>
 			<input id="fc">
 
 			<label for="fn">Nombre</label>
@@ -124,7 +180,7 @@
 			</div>
 
 			<label for="en">Descripción (opcional)</label>
-			<input id="en" placeholder="Ej: Examen de Acceso a Datos">
+			<input id="en" placeholder="Ej: Examen del tema 3">
 
 			<div class="row">
 				<button id="ca">Cerrar</button>
@@ -144,7 +200,7 @@
 				<!-- ADVERTENCIA: solo se ve mientras se está en modo edición -->
 				<div class="aviso-edit" id="wedit" role="alert" hidden>
 					<b>✏️ Estás editando el horario</b>
-					<span>Calendario, Sincronizar e Imprimir se desbloquean al pulsar <b>Terminar edición</b>. El botón <b>Restablecer</b> vuelve al horario original (los exámenes del calendario se conservan).</span>
+					<span>Calendario, Sincronizar e Imprimir se desbloquean al pulsar <b>Listo</b>. El botón <b>Restablecer</b> vacía el horario (se conservan tus asignaturas y los exámenes del calendario).</span>
 				</div>
 
 				<!-- AVISO: exámenes y festivos de esta semana y de la próxima (se rellena desde JavaScript) -->
